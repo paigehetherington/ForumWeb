@@ -1,0 +1,22 @@
+<html>
+<body>
+{{^userName}} <!-- if false condition -->
+<form action="/login" method="post">
+    <input type="text" placeholder="Enter your name" name="loginName"/>
+    <button type="submit">Login</button>
+</form>
+<br>
+{{/userName}}
+
+{{#userName}} <!-- if true condition -->
+<form action="logout" method="post">
+    <button type="submit">Logout</button>
+</form>
+<br>
+{{/userName}}
+
+{{#messages}}
+<a href = "/?replyId={{id}}">{{author}}: {{text}}</a><br/>  <!--query params to get route, a href is link, can follow without changing function of server -->
+{{/messages}}
+</body>
+</html>
