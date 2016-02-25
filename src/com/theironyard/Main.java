@@ -28,7 +28,7 @@ public class Main {
                     String userName = session.attribute("userName");
 
 
-                    String replyId = request.queryParams("replyId");
+                    String replyId = request.queryParams("replyId"); //sending parameter to get route
                     int replyIdNum = -1;
                     if (replyId != null) {
                         replyIdNum = Integer.valueOf(replyId);
@@ -44,6 +44,7 @@ public class Main {
                     }
                     m.put("messages", threads);
                     m.put("userName", userName);
+                    m.put("replyId", replyIdNum); //reply id ofpage itself so can access in mustache
                     return new ModelAndView(m, "home.html");
 
                 }),
@@ -55,6 +56,12 @@ public class Main {
                     String userName = request.queryParams("loginName");
                     if (userName == null) {
                         throw new Exception("Login name not found.");
+                    }
+
+                    User user = users.get(userName);
+                    if (user == null) {
+                        user = new User(userName, "");
+                        users.put(userName, user);
                     }
                     Session session = request.session();
                     session.attribute("userName", userName);
@@ -69,6 +76,31 @@ public class Main {
                     session.invalidate();
                     response.redirect("/");
                     return "";
+                })
+        );
+
+        Spark.post(
+                "/create-message",
+                ((request, response) ->  {
+                    Session session = request.session();
+                    String userName = session.attribute("userName");
+                    if (userName == null) {
+                        throw new Exception("Not logged in.");
+                    }
+
+                    String text = request.queryParams("messageText");
+                    String replyId = request.queryParams("replyId");
+                    if (text == null || replyId == null) {
+                        throw new Exception("Didn't get necessary query parameters.");
+                    }
+                    int replyIdNum = Integer.valueOf(replyId);
+
+                    Message m = new Message(messages.size(), replyIdNum, userName, text); //message size creates id and gets next available number
+                    messages.add(m);
+
+                    response.redirect(request.headers("Referer")); //referrer states what url it came from
+                    return "";
+
                 })
         );
     }
